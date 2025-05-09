@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>刷题系统</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .upload-section {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 20px;
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+        }
+        .question-section {
+            display: none;
+            margin-top: 20px;
+        }
+        .question-text {
+            font-size: 18px;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        .question-type {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        .options {
+            display: grid;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .option {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .option:hover {
+            background-color: #f0f0f0;
+        }
+        .option.selected {
+            background-color: #e3f2fd;
+            border-color: #2196f3;
+        }
+        .option.correct {
+            background-color: #c8e6c9;
+            border-color: #4caf50;
+        }
+        .option.incorrect {
+            background-color: #ffcdd2;
+            border-color: #f44336;
+        }
+        .feedback {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+        }
+        .feedback.correct {
+            background-color: #c8e6c9;
+            color: #2e7d32;
+        }
+        .feedback.incorrect {
+            background-color: #ffcdd2;
+            color: #c62828;
+        }
+        .next-btn {
+            display: none;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #2196f3;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .next-btn:hover {
+            background-color: #1976d2;
+        }
+        .file-input {
+            display: none;
+        }
+        .upload-btn {
+            padding: 10px 20px;
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .upload-btn:hover {
+            background-color: #388e3c;
+        }
+        .fill-blank-input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        .submit-btn {
+            padding: 10px 20px;
+            background-color: #2196f3;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .submit-btn:hover {
+            background-color: #1976d2;
+        }
+        .true-false-options {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .true-false-btn {
+            flex: 1;
+            padding: 15px;
+            font-size: 18px;
+            text-align: center;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .true-false-btn:hover {
+            background-color: #f0f0f0;
+        }
+        .true-false-btn.selected {
+            background-color: #e3f2fd;
+            border-color: #2196f3;
+        }
+        .true-false-btn.correct {
+            background-color: #c8e6c9;
+            border-color: #4caf50;
+        }
+        .true-false-btn.incorrect {
+            background-color: #ffcdd2;
+            border-color: #f44336;
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .show-answer-btn {
+            padding: 10px 20px;
+            background-color: #ff9800;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .show-answer-btn:hover {
+            background-color: #f57c00;
+        }
+        .prev-btn {
+            padding: 10px 20px;
+            background-color: #9e9e9e;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .prev-btn:hover {
+            background-color: #757575;
+        }
+        .answer-display {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="upload-section">
+            <h2>刷题系统</h2>
+            <input type="file" id="fileInput" class="file-input" accept=".docx">
+            <button class="upload-btn" onclick="document.getElementById('fileInput').click()">选择Word题库</button>
+            <p id="uploadStatus"></p>
+        </div>
+        
+        <div class="question-section" id="questionSection">
+            <div class="question-type" id="questionType"></div>
+            <div class="question-text" id="questionText"></div>
+            <div class="options" id="options"></div>
+            <div id="trueFalseOptions" class="true-false-options" style="display: none;">
+                <div class="true-false-btn" onclick="checkTrueFalse('对')">对</div>
+                <div class="true-false-btn" onclick="checkTrueFalse('错')">错</div>
+            </div>
+            <div id="fillBlankInput" style="display: none;">
+                <input type="text" class="fill-blank-input" id="fillBlankAnswer" placeholder="请输入答案，多个答案用逗号分隔">
+                <button class="submit-btn" onclick="submitFillBlank()">提交答案</button>
+            </div>
+            <div class="feedback" id="feedback"></div>
+            <div class="answer-display" id="answerDisplay"></div>
+            <div class="button-group">
+                <button class="prev-btn" id="prevBtn" onclick="previousQuestion()">上一题</button>
+                <button class="show-answer-btn" id="showAnswerBtn" onclick="showAnswer()">查看答案</button>
+                <button class="next-btn" id="nextBtn" onclick="nextQuestion()">下一题</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentSequenceNumber = 0;
+        let questions = [];
+        let selectedOptions = new Set();
+
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            fetch('/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('uploadStatus').textContent = data.message;
+                    document.getElementById('questionSection').style.display = 'block';
+                    currentSequenceNumber = data.sequence_number;
+                    displayQuestion(data.question);
+                } else {
+                    document.getElementById('uploadStatus').textContent = data.message;
+                }
+            })
+            .catch(error => {
+                document.getElementById('uploadStatus').textContent = '上传失败：' + error;
+            });
+        });
+
+        function displayQuestion(question) {
+            document.getElementById('questionType').textContent = `题型：${question.type}`;
+            document.getElementById('questionText').textContent = question.question;
+            const optionsContainer = document.getElementById('options');
+            const fillBlankInput = document.getElementById('fillBlankInput');
+            const trueFalseOptions = document.getElementById('trueFalseOptions');
+            const answerDisplay = document.getElementById('answerDisplay');
+            
+            // 重置选择状态
+            selectedOptions.clear();
+            
+            // 隐藏答案显示
+            answerDisplay.style.display = 'none';
+            
+            // 根据题型显示不同的输入方式
+            if (question.type === '填空题') {
+                optionsContainer.style.display = 'none';
+                trueFalseOptions.style.display = 'none';
+                fillBlankInput.style.display = 'block';
+                document.getElementById('fillBlankAnswer').value = '';
+            } else if (question.type === '判断题') {
+                optionsContainer.style.display = 'none';
+                fillBlankInput.style.display = 'none';
+                trueFalseOptions.style.display = 'flex';
+                // 重置判断题按钮状态
+                document.querySelectorAll('.true-false-btn').forEach(btn => {
+                    btn.className = 'true-false-btn';
+                });
+            } else {
+                fillBlankInput.style.display = 'none';
+                trueFalseOptions.style.display = 'none';
+                optionsContainer.style.display = 'grid';
+                optionsContainer.innerHTML = '';
+                
+                question.options.forEach((option, index) => {
+                    const optionDiv = document.createElement('div');
+                    optionDiv.className = 'option';
+                    optionDiv.textContent = option;
+                    
+                    if (question.type === '多选题') {
+                        optionDiv.onclick = () => toggleMultiChoice(index);
+                    } else {
+                        optionDiv.onclick = () => checkAnswer(String.fromCharCode(65 + index));
+                    }
+                    
+                    optionsContainer.appendChild(optionDiv);
+                });
+            }
+
+            document.getElementById('feedback').style.display = 'none';
+            document.getElementById('showAnswerBtn').style.display = 'block';
+            document.getElementById('nextBtn').style.display = 'block';
+        }
+
+        function toggleMultiChoice(index) {
+            const option = document.getElementsByClassName('option')[index];
+            if (selectedOptions.has(index)) {
+                selectedOptions.delete(index);
+                option.classList.remove('selected');
+            } else {
+                selectedOptions.add(index);
+                option.classList.add('selected');
+            }
+        }
+
+        function submitMultiChoice() {
+            if (selectedOptions.size === 0) {
+                alert('请至少选择一个选项');
+                return;
+            }
+            
+            const selectedAnswers = Array.from(selectedOptions)
+                .map(index => String.fromCharCode(65 + index))
+                .join('');
+            
+            checkAnswer(selectedAnswers);
+        }
+
+        function checkTrueFalse(answer) {
+            const buttons = document.querySelectorAll('.true-false-btn');
+            buttons.forEach(btn => btn.classList.remove('selected'));
+            event.target.classList.add('selected');
+            checkAnswer(answer);
+        }
+
+        function submitFillBlank() {
+            const answer = document.getElementById('fillBlankAnswer').value.trim();
+            if (!answer) {
+                alert('请输入答案');
+                return;
+            }
+            checkAnswer(answer);
+        }
+
+        function checkAnswer(answer) {
+            fetch('/check_answer', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    sequence_number: currentSequenceNumber,
+                    answer: answer
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                const feedback = document.getElementById('feedback');
+                
+                if (data.type === '多选题') {
+                    const options = document.getElementsByClassName('option');
+                    const correctAnswers = data.correct_answer.split('');
+                    
+                    // 重置所有选项样式
+                    Array.from(options).forEach(opt => {
+                        opt.className = 'option';
+                    });
+                    
+                    // 标记正确和错误的选项
+                    correctAnswers.forEach(ans => {
+                        const index = ans.charCodeAt(0) - 65;
+                        options[index].classList.add('correct');
+                    });
+                    
+                    Array.from(selectedOptions).forEach(index => {
+                        const ans = String.fromCharCode(65 + index);
+                        if (!correctAnswers.includes(ans)) {
+                            options[index].classList.add('incorrect');
+                        }
+                    });
+                } else if (data.type === '判断题') {
+                    const buttons = document.querySelectorAll('.true-false-btn');
+                    buttons.forEach(btn => {
+                        if (btn.textContent === data.correct_answer) {
+                            btn.classList.add('correct');
+                        } else if (btn.textContent === answer) {
+                            btn.classList.add('incorrect');
+                        }
+                    });
+                } else if (data.type === '填空题') {
+                    // 填空题不需要标记选项
+                } else {
+                    const options = document.getElementsByClassName('option');
+                    const selectedIndex = answer.charCodeAt(0) - 65;
+                    
+                    // 重置所有选项样式
+                    Array.from(options).forEach(opt => {
+                        opt.className = 'option';
+                    });
+                    
+                    if (data.is_correct) {
+                        options[selectedIndex].classList.add('correct');
+                    } else {
+                        options[selectedIndex].classList.add('incorrect');
+                        const correctIndex = data.correct_answer.charCodeAt(0) - 65;
+                        options[correctIndex].classList.add('correct');
+                    }
+                }
+
+                if (data.is_correct) {
+                    feedback.textContent = '✓ 恭喜你答对了！';
+                    feedback.className = 'feedback correct';
+                } else {
+                    feedback.textContent = `✗ 很遗憾答错了！正确答案是：${data.correct_answer}`;
+                    feedback.className = 'feedback incorrect';
+                }
+
+                feedback.style.display = 'block';
+                document.getElementById('showAnswerBtn').style.display = 'block';
+                document.getElementById('nextBtn').style.display = 'block';
+            });
+        }
+
+        function showAnswer() {
+            fetch('/get_answer', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    sequence_number: currentSequenceNumber
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const answerDisplay = document.getElementById('answerDisplay');
+                    answerDisplay.textContent = `正确答案：${data.answer}`;
+                    answerDisplay.style.display = 'block';
+                }
+            });
+        }
+
+        function nextQuestion() {
+            fetch('/next_question', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    sequence_number: currentSequenceNumber
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    currentSequenceNumber = data.sequence_number;
+                    displayQuestion(data.question);
+                }
+            });
+        }
+
+        function previousQuestion() {
+            fetch('/previous_question', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    sequence_number: currentSequenceNumber
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    currentSequenceNumber = data.sequence_number;
+                    displayQuestion(data.question);
+                }
+            });
+        }
+    </script>
+</body>
+</html> 
