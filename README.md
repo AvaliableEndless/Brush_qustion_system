@@ -1,6 +1,8 @@
 # 刷题系统
 
 这是一个基于Python的刷题系统，可以从自定义的Word文档中读取题目并进行练习。
+<img width="414" alt="d4b2acc5af0d8f5912ad9d0744e58ce" src="https://github.com/user-attachments/assets/d53c6c86-4a0d-4cb5-b1c3-65ef1dc1a25f" />
+
 
 ## 功能特点
 
