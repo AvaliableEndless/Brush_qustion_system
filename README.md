@@ -1,6 +1,7 @@
 # 刷题系统
 
 这是一个基于Python的刷题系统，可以从自定义的Word文档中读取题目并进行练习。
+！[image1](https://github.com/AvaliableEndless/Brush_qustion_system/blob/main/show.png)
 
 ## 功能特点
 
